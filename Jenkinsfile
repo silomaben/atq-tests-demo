@@ -323,7 +323,7 @@ def checkExistence() {
 
         // Get pod statuses
          def podStatuses = sh(
-                        script: "./kubectl get deployments -n jenkins --field-selector=status.phase=Terminating --output=json",
+                        script: 'kubectl get deployments -n jenkins --output=json | jq \'.items[] | select(.status.replicas > 0) | select(.status.replicas == .status.readyReplicas) | select(.status.replicas > .status.availableReplicas)\'',
                         returnStdout: true
                     ).trim()
     
