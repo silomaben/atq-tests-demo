@@ -25,7 +25,7 @@ pipeline {
        stage('Kill pods that are running') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
+                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'jenkins', serverUrl: 'https://192.168.49.2:8443']]) {
                         // Initialize a variable to track if pods were found before
                         def firstRunCompleted = false
                         def breakLoop = false
@@ -59,6 +59,7 @@ pipeline {
                                     echo "Deleting pods..."
                                     if (expressAppExists) {
                                         sh "./kubectl delete -n jenkins deployment express-app"
+                                        
                                     }
                                     if (uiAppExists) {
                                         sh "./kubectl delete -n jenkins deployment ui-app"
@@ -284,37 +285,37 @@ def checkExistence() {
     //     script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
     //     returnStatus: true
     // ) == 0
+    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
+        def expressAppExists = sh(
+                        script: "./kubectl get -n jenkins deployment express-app",
+                        returnStatus: true,
+                        returnStdout: true
+                    )
 
-    def expressAppExists = sh(
-                    script: "./kubectl get -n jenkins deployment express-app",
-                    returnStatus: true,
-                    returnStdout: true
-                )
+        // Check if ui-app deployment exists
+        def uiAppExists = sh(
+            script: "./kubectl get -n jenkins deployment ui-app >/dev/null 2>&1",
+            returnStatus: true
+        ) == 0
 
-    // Check if ui-app deployment exists
-    def uiAppExists = sh(
-        script: "./kubectl get -n jenkins deployment ui-app >/dev/null 2>&1",
-        returnStatus: true
-    ) == 0
+        // Check if express-app-service service exists
+        def expressAppServiceExists = sh(
+            script: "./kubectl get -n jenkins service express-app-service >/dev/null 2>&1",
+            returnStatus: true
+        ) == 0
 
-    // Check if express-app-service service exists
-    def expressAppServiceExists = sh(
-        script: "./kubectl get -n jenkins service express-app-service >/dev/null 2>&1",
-        returnStatus: true
-    ) == 0
+        // Check if ui-app-service exists
+        def uiAppServiceExists = sh(
+            script: "./kubectl get -n jenkins service ui-app-service >/dev/null 2>&1",
+            returnStatus: true
+        ) == 0
 
-    // Check if ui-app-service exists
-    def uiAppServiceExists = sh(
-        script: "./kubectl get -n jenkins service ui-app-service >/dev/null 2>&1",
-        returnStatus: true
-    ) == 0
-
-    // Check if e2e-test-app-job job exists
-    def e2eTestJobExists = sh(
-        script: "./kubectl get -n jenkins job e2e-test-app-job >/dev/null 2>&1",
-        returnStatus: true
-    ) == 0
-
+        // Check if e2e-test-app-job job exists
+        def e2eTestJobExists = sh(
+            script: "./kubectl get -n jenkins job e2e-test-app-job >/dev/null 2>&1",
+            returnStatus: true
+        ) == 0
+    }
     
 
     return [expressAppExists: expressAppExists, uiAppExists: uiAppExists, 
