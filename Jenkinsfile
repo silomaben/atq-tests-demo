@@ -303,11 +303,11 @@ def checkExistence() {
 
     // Get pod statuses
     def podStatuses = sh(
-        script: "./kubectl get pods -n jenkins --field-selector=status.phase --output=json",
+        script: "./kubectl get pods -n jenkins --output=json",
         returnStdout: true
     ).trim()
 
     return [expressAppExists: expressAppExists, uiAppExists: uiAppExists, 
             expressAppServiceExists: expressAppServiceExists, uiAppServiceExists: uiAppServiceExists, 
-            e2eTestJobExists: e2eTestJobExists, podStatuses: podStatuses]
+            e2eTestJobExists: e2eTestJobExists]
 }
