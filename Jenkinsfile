@@ -46,6 +46,11 @@ pipeline {
                             def e2eTestJobExists = podStatuses['e2eTestJobExists']
                             def podStatusesJson = podStatuses['podStatuses']
 
+                            echo "${podStatuses}"
+
+
+
+
                             // Check if any pods are found
                             if (expressAppExists || uiAppExists || expressAppServiceExists || uiAppServiceExists || e2eTestJobExists) {
 
