@@ -28,13 +28,15 @@ pipeline {
                     withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                         // Initialize a variable to track if pods were found before
                         def firstRunCompleted = false
+                        def breakLoop = false
+                        def podsFound = false
 
                         // Loop until pods are not found or for a specific number of iterations
                         def maxIterations = 5 // Adjust as needed
                         def currentIteration = 0
                         
 
-                        while (currentIteration < maxIterations) {
+                        while (currentIteration < maxIterations && breakLoop==false) {
                             echo "Checking pod existence and statuses..."
                             def podStatuses = checkExistence()
                             def expressAppExists = podStatuses['expressAppExists']
@@ -45,7 +47,7 @@ pipeline {
                             def podStatusesJson = podStatuses['podStatuses']
 
                             // Check if any pods are found
-                            if (podStatusesJson.contains("Running") || podStatusesJson.contains("Terminating")) {
+                            if (expressAppExists || uiAppExists || expressAppServiceExists || uiAppServiceExists || e2eTestJobExists) {
 
                                 // Delete pods only if it's the first time they are found
                                 if (!firstRunCompleted) {
@@ -67,12 +69,13 @@ pipeline {
                                     }
 
                                     firstRunCompleted = true
+                                    podsFound = true
                                 } else {
                                     echo "Waiting for pods to terminate..."
                                     sleep 15 // Wait for 15 seconds before checking again
                                 }
                             } else {
-                                break
+                                breakLoop = true
                             }
 
                             currentIteration++
