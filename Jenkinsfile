@@ -25,59 +25,61 @@ pipeline {
        stage('Kill pods that are running') {
             steps {
                 script {
-                    // Initialize a variable to track if pods were found before
-                    def podsFound = false
+                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
+                        // Initialize a variable to track if pods were found before
+                        def podsFound = false
 
-                    // Loop until pods are not found or for a specific number of iterations
-                    def maxIterations = 5 // Adjust as needed
-                    def currentIteration = 0
+                        // Loop until pods are not found or for a specific number of iterations
+                        def maxIterations = 5 // Adjust as needed
+                        def currentIteration = 0
 
-                    while (currentIteration < maxIterations && podsFound) {
-                        echo "Checking pod existence and statuses..."
-                        def podStatuses = checkExistence()
-                        def expressAppExists = podStatuses['expressAppExists']
-                        def uiAppExists = podStatuses['uiAppExists']
-                        def expressAppServiceExists = podStatuses['expressAppServiceExists']
-                        def uiAppServiceExists = podStatuses['uiAppServiceExists']
-                        def e2eTestJobExists = podStatuses['e2eTestJobExists']
-                        def podStatusesJson = podStatuses['podStatuses']
+                        while (currentIteration < maxIterations && podsFound) {
+                            echo "Checking pod existence and statuses..."
+                            def podStatuses = checkExistence()
+                            def expressAppExists = podStatuses['expressAppExists']
+                            def uiAppExists = podStatuses['uiAppExists']
+                            def expressAppServiceExists = podStatuses['expressAppServiceExists']
+                            def uiAppServiceExists = podStatuses['uiAppServiceExists']
+                            def e2eTestJobExists = podStatuses['e2eTestJobExists']
+                            def podStatusesJson = podStatuses['podStatuses']
 
-                        // Check if any pods are found
-                        if (podStatusesJson.contains("Running") || podStatusesJson.contains("Terminating")) {
-                            podsFound = true
+                            // Check if any pods are found
+                            if (podStatusesJson.contains("Running") || podStatusesJson.contains("Terminating")) {
+                                podsFound = true
 
-                            // Delete pods only if it's the first time they are found
-                            if (!podsFound) {
-                                echo "Deleting pods..."
-                                if (expressAppExists) {
-                                    sh "./kubectl delete -n jenkins deployment express-app"
-                                }
-                                if (uiAppExists) {
-                                    sh "./kubectl delete -n jenkins deployment ui-app"
-                                }
-                                if (expressAppServiceExists) {
-                                    sh "./kubectl delete -n jenkins service express-app-service"
-                                }
-                                if (uiAppServiceExists) {
-                                    sh "./kubectl delete -n jenkins service ui-app-service"
-                                }
-                                if (e2eTestJobExists) {
-                                    sh "./kubectl delete -n jenkins job e2e-test-app-job"
+                                // Delete pods only if it's the first time they are found
+                                if (!podsFound) {
+                                    echo "Deleting pods..."
+                                    if (expressAppExists) {
+                                        sh "./kubectl delete -n jenkins deployment express-app"
+                                    }
+                                    if (uiAppExists) {
+                                        sh "./kubectl delete -n jenkins deployment ui-app"
+                                    }
+                                    if (expressAppServiceExists) {
+                                        sh "./kubectl delete -n jenkins service express-app-service"
+                                    }
+                                    if (uiAppServiceExists) {
+                                        sh "./kubectl delete -n jenkins service ui-app-service"
+                                    }
+                                    if (e2eTestJobExists) {
+                                        sh "./kubectl delete -n jenkins job e2e-test-app-job"
+                                    }
+                                } else {
+                                    echo "Waiting for pods to terminate..."
+                                    sleep 15 // Wait for 15 seconds before checking again
                                 }
                             } else {
-                                echo "Waiting for pods to terminate..."
-                                sleep 15 // Wait for 15 seconds before checking again
+                                // No pods found, exit the loop
+                                podsFound = false
                             }
-                        } else {
-                            // No pods found, exit the loop
-                            podsFound = false
+
+                            currentIteration++
                         }
 
-                        currentIteration++
-                    }
-
-                    if (!podsFound) {
-                        echo "No pods found or terminated."
+                        if (!podsFound) {
+                            echo "No pods found or terminated."
+                        }
                     }
                 }
             }
