@@ -25,71 +25,63 @@ pipeline {
        stage('Kill pods that are running') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
-                        // fetch kubectl
-                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-                        sh 'chmod u+x ./kubectl'
-                        
-                        // Check if express-app deployment exists
-                        def expressAppExists = sh(
-                            script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
-                            returnStatus: true
-                        ) == 0
+                    // Initialize a variable to track if pods were found before
+                    def podsFound = false
 
-                        // Check if ui-app deployment exists
-                        def uiAppExists = sh(
-                            script: "./kubectl get -n jenkins deployment ui-app >/dev/null 2>&1",
-                            returnStatus: true
-                        ) == 0
+                    // Loop until pods are not found or for a specific number of iterations
+                    def maxIterations = 5 // Adjust as needed
+                    def currentIteration = 0
 
-                        // Check if express-app-service service exists
-                        def expressAppServiceExists = sh(
-                            script: "./kubectl get -n jenkins service express-app-service >/dev/null 2>&1",
-                            returnStatus: true
-                        ) == 0
+                    while (currentIteration < maxIterations && podsFound) {
+                        echo "Checking pod existence and statuses..."
+                        def podStatuses = checkExistence()
+                        def expressAppExists = podStatuses['expressAppExists']
+                        def uiAppExists = podStatuses['uiAppExists']
+                        def expressAppServiceExists = podStatuses['expressAppServiceExists']
+                        def uiAppServiceExists = podStatuses['uiAppServiceExists']
+                        def e2eTestJobExists = podStatuses['e2eTestJobExists']
+                        def podStatusesJson = podStatuses['podStatuses']
 
-                        // Check if ui-app-service exists
-                        def uiAppServiceExists = sh(
-                            script: "./kubectl get -n jenkins service ui-app-service >/dev/null 2>&1",
-                            returnStatus: true
-                        ) == 0
+                        // Check if any pods are found
+                        if (podStatusesJson.contains("Running") || podStatusesJson.contains("Terminating")) {
+                            podsFound = true
 
-                        // Check if e2e-test-app-job job exists
-                        def e2eTestJobExists = sh(
-                            script: "./kubectl get -n jenkins job e2e-test-app-job >/dev/null 2>&1",
-                            returnStatus: true
-                        ) == 0
-
-                        // Delete deployments if they exist
-                        if (expressAppExists) {
-                            sh "./kubectl delete -n jenkins deployment express-app"
-                        }
-                        if (uiAppExists) {
-                            sh "./kubectl delete -n jenkins deployment ui-app"
-                        }
-
-                        // Delete services if they exist
-                        if (expressAppServiceExists) {
-                            sh "./kubectl delete -n jenkins service express-app-service"
-                        }
-                        if (uiAppServiceExists) {
-                            sh "./kubectl delete -n jenkins service ui-app-service"
+                            // Delete pods only if it's the first time they are found
+                            if (!podsFound) {
+                                echo "Deleting pods..."
+                                if (expressAppExists) {
+                                    sh "./kubectl delete -n jenkins deployment express-app"
+                                }
+                                if (uiAppExists) {
+                                    sh "./kubectl delete -n jenkins deployment ui-app"
+                                }
+                                if (expressAppServiceExists) {
+                                    sh "./kubectl delete -n jenkins service express-app-service"
+                                }
+                                if (uiAppServiceExists) {
+                                    sh "./kubectl delete -n jenkins service ui-app-service"
+                                }
+                                if (e2eTestJobExists) {
+                                    sh "./kubectl delete -n jenkins job e2e-test-app-job"
+                                }
+                            } else {
+                                echo "Waiting for pods to terminate..."
+                                sleep 15 // Wait for 15 seconds before checking again
+                            }
+                        } else {
+                            // No pods found, exit the loop
+                            podsFound = false
                         }
 
-                        // Delete job if it exists
-                        if (e2eTestJobExists) {
-                            sh "./kubectl delete -n jenkins job e2e-test-app-job"
-                        }
+                        currentIteration++
+                    }
 
-                        // wait for pods to terminate
-                        if (e2eTestJobExists || uiAppServiceExists || expressAppServiceExists) {
-                            sleep 30
-                        }
+                    if (!podsFound) {
+                        echo "No pods found or terminated."
                     }
                 }
-            }                      
+            }
         }
-
 
         stage('Start API Pods') {
             steps {
@@ -271,4 +263,48 @@ def waitForReport() {
 
 def fileExists(filePath) {
     return sh(script: "[ -f '$filePath' ]", returnStatus: true) == 0
+}
+
+
+
+def checkExistence() {
+    // Check if express-app deployment exists
+    def expressAppExists = sh(
+        script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
+        returnStatus: true
+    ) == 0
+
+    // Check if ui-app deployment exists
+    def uiAppExists = sh(
+        script: "./kubectl get -n jenkins deployment ui-app >/dev/null 2>&1",
+        returnStatus: true
+    ) == 0
+
+    // Check if express-app-service service exists
+    def expressAppServiceExists = sh(
+        script: "./kubectl get -n jenkins service express-app-service >/dev/null 2>&1",
+        returnStatus: true
+    ) == 0
+
+    // Check if ui-app-service exists
+    def uiAppServiceExists = sh(
+        script: "./kubectl get -n jenkins service ui-app-service >/dev/null 2>&1",
+        returnStatus: true
+    ) == 0
+
+    // Check if e2e-test-app-job job exists
+    def e2eTestJobExists = sh(
+        script: "./kubectl get -n jenkins job e2e-test-app-job >/dev/null 2>&1",
+        returnStatus: true
+    ) == 0
+
+    // Get pod statuses
+    def podStatuses = sh(
+        script: "./kubectl get pods -n jenkins --field-selector=status.phase --output=json",
+        returnStdout: true
+    ).trim()
+
+    return [expressAppExists: expressAppExists, uiAppExists: uiAppExists, 
+            expressAppServiceExists: expressAppServiceExists, uiAppServiceExists: uiAppServiceExists, 
+            e2eTestJobExists: e2eTestJobExists, podStatuses: podStatuses]
 }
