@@ -286,6 +286,9 @@ def checkExistence() {
     //     returnStatus: true
     // ) == 0
     withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'jenkins', serverUrl: 'https://192.168.49.2:8443']]) {
+
+
+        sh "./kubectl get -n jenkins all"
         def expressAppExists = sh(
                         script: "./kubectl get -n jenkins deployment express-app",
                         returnStatus: true,
