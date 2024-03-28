@@ -30,7 +30,7 @@ pipeline {
                         sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
                         sh 'chmod u+x ./kubectl'
 
-                        
+
                     withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                         // Initialize a variable to track if pods were found before
                         def firstRunCompleted = false
@@ -83,10 +83,11 @@ pipeline {
                                     firstRunCompleted = true
                                     podsFound = true
                                 } else {
-                                    echo "Waiting for pods to terminate..."
+                                    echo "Waiting 15 secs for pods to terminate..."
                                     sleep 15 // Wait for 15 seconds before checking again
                                 }
                             } else {
+                                echo "found none running so exiting loop"
                                 breakLoop = true
                             }
 
@@ -286,19 +287,12 @@ def fileExists(filePath) {
 
 
 def checkExistence() {
-    // Check if express-app deployment exists
-    // def expressAppExists = sh(
-    //     script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
-    //     returnStatus: true
-    // ) == 0
-
-
-        sh "./kubectl get -n jenkins all"
+        // Check if express-app deployment exists
         def expressAppExists = sh(
-                        script: "./kubectl get -n jenkins deployment express-app",
-                        returnStatus: true,
-                        returnStdout: true
-                    )
+            script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
+            returnStatus: true
+        ) == 0
+
 
         // Check if ui-app deployment exists
         def uiAppExists = sh(
