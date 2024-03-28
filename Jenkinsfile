@@ -27,13 +27,14 @@ pipeline {
                 script {
                     withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                         // Initialize a variable to track if pods were found before
-                        def podsFound = false
+                        def firstRunCompleted = false
 
                         // Loop until pods are not found or for a specific number of iterations
                         def maxIterations = 5 // Adjust as needed
                         def currentIteration = 0
+                        
 
-                        while (currentIteration < maxIterations && podsFound) {
+                        while (currentIteration < maxIterations) {
                             echo "Checking pod existence and statuses..."
                             def podStatuses = checkExistence()
                             def expressAppExists = podStatuses['expressAppExists']
@@ -45,10 +46,9 @@ pipeline {
 
                             // Check if any pods are found
                             if (podStatusesJson.contains("Running") || podStatusesJson.contains("Terminating")) {
-                                podsFound = true
 
                                 // Delete pods only if it's the first time they are found
-                                if (!podsFound) {
+                                if (!firstRunCompleted) {
                                     echo "Deleting pods..."
                                     if (expressAppExists) {
                                         sh "./kubectl delete -n jenkins deployment express-app"
@@ -65,13 +65,14 @@ pipeline {
                                     if (e2eTestJobExists) {
                                         sh "./kubectl delete -n jenkins job e2e-test-app-job"
                                     }
+
+                                    firstRunCompleted = true
                                 } else {
                                     echo "Waiting for pods to terminate..."
                                     sleep 15 // Wait for 15 seconds before checking again
                                 }
                             } else {
-                                // No pods found, exit the loop
-                                podsFound = false
+                                break
                             }
 
                             currentIteration++
