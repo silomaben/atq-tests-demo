@@ -280,10 +280,16 @@ def fileExists(filePath) {
 
 def checkExistence() {
     // Check if express-app deployment exists
+    // def expressAppExists = sh(
+    //     script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
+    //     returnStatus: true
+    // ) == 0
+
     def expressAppExists = sh(
-        script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
-        returnStatus: true
-    ) == 0
+                    script: "./kubectl get -n jenkins deployment express-app",
+                    returnStatus: true,
+                    returnStdout: true
+                )
 
     // Check if ui-app deployment exists
     def uiAppExists = sh(
