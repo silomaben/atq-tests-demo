@@ -52,9 +52,7 @@ pipeline {
                             def e2eTestJobExists = podStatuses['e2eTestJobExists']
                             def podStatusesJson = podStatuses['podStatuses']
 
-                            echo "${podStatuses}"
-
-                             sh "./kubectl -n jenkins get all"
+                            // echo "${podStatuses}"
 
 
 
@@ -86,7 +84,7 @@ pipeline {
                                     firstRunCompleted = true
                                     podsFound = true
                                 } else {
-                                    echo "Waiting 15 secs for pods to terminate..."
+                                    echo "Not all pods have finished terminating. Waiting 15 secs for pods to terminate..."
                                     sleep 15 // Wait for 15 seconds before checking again
                                 }
                             } else {
