@@ -25,7 +25,13 @@ pipeline {
        stage('Kill pods that are running') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'jenkins', serverUrl: 'https://192.168.49.2:8443']]) {
+
+                    // fetch kubectl
+                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+                        sh 'chmod u+x ./kubectl'
+
+                        
+                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                         // Initialize a variable to track if pods were found before
                         def firstRunCompleted = false
                         def breakLoop = false
@@ -285,7 +291,6 @@ def checkExistence() {
     //     script: "./kubectl get -n jenkins deployment express-app >/dev/null 2>&1",
     //     returnStatus: true
     // ) == 0
-    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'jenkins', serverUrl: 'https://192.168.49.2:8443']]) {
 
 
         sh "./kubectl get -n jenkins all"
@@ -318,7 +323,7 @@ def checkExistence() {
             script: "./kubectl get -n jenkins job e2e-test-app-job >/dev/null 2>&1",
             returnStatus: true
         ) == 0
-    }
+    
     
 
     return [expressAppExists: expressAppExists, uiAppExists: uiAppExists, 
