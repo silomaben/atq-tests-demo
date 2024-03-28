@@ -61,7 +61,7 @@ pipeline {
 
 
                             // Check if any pods are found
-                            if (expressAppExists || uiAppExists || expressAppServiceExists || uiAppServiceExists || e2eTestJobExists) {
+                            if (expressAppExists || uiAppExists || expressAppServiceExists || uiAppServiceExists || e2eTestJobExists || podStatusesJson.contains("Terminating")) {
 
                                 // Delete pods only if it's the first time they are found
                                 if (!firstRunCompleted) {
@@ -320,10 +320,16 @@ def checkExistence() {
             script: "./kubectl get -n jenkins job e2e-test-app-job >/dev/null 2>&1",
             returnStatus: true
         ) == 0
+
+        // Get pod statuses
+        def podStatuses = sh(
+            script: "./kubectl get pods -n jenkins --field-selector=status.phase --output=json",
+            returnStdout: true
+        ).trim()
     
     
 
     return [expressAppExists: expressAppExists, uiAppExists: uiAppExists, 
             expressAppServiceExists: expressAppServiceExists, uiAppServiceExists: uiAppServiceExists, 
-            e2eTestJobExists: e2eTestJobExists]
+            e2eTestJobExists: e2eTestJobExists, podStatuses: podStatuses]
 }
