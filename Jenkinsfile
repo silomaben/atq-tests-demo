@@ -54,6 +54,9 @@ pipeline {
 
                             echo "${podStatuses}"
 
+                             sh "./kubectl -n jenkins get all"
+
+
 
 
 
