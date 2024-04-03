@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  namespace: jenkins
+  namespace: filetracker
   name: e2e-test-app-job
 spec:
   template:
@@ -15,10 +15,10 @@ spec:
             - containerPort: 80
           imagePullPolicy: Always
           volumeMounts:
-            - name: jenkins-vol
-              mountPath: /var/jenkins_home
+            - name: cypress-vol
+              mountPath: /shared
       restartPolicy: Never
       volumes:
-        - name: jenkins-vol
+        - name: cypress-vol
           persistentVolumeClaim: 
-            claimName: jenkins-pv-claim  
+            claimName: efs-shared  

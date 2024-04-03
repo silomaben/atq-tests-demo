@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: express-app
-  namespace: jenkins
+  namespace: filetracker
   labels:
     app: express-app
 spec:
@@ -28,7 +28,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: express-app-service
-  namespace: jenkins 
+  namespace: filetracker 
 spec:
   selector:
     app: express-app

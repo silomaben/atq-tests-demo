@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: express-app-service
-  namespace: jenkins 
+  namespace: filetracker 
 spec:
   selector:
     app: express-app

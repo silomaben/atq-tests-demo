@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ui-app
-  namespace: jenkins 
+  namespace: filetracker 
   labels:
     app: ui-app
 spec:
@@ -21,5 +21,12 @@ spec:
           image: silomaben/ui-app
           ports:
             - containerPort: 80
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: cypress-vol
+            mountPath: /shared
+      volumes:
+        - name: cypress-vol
+          persistentVolumeClaim: 
+            claimName: efs-shared
       restartPolicy: Always
