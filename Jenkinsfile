@@ -17,40 +17,19 @@ pipeline {
     }
 
     stages {
-
-       // stage('logs') {
-        //     steps {
-        //         script {
-        //             echo"logs yessir \n\n\n"
-                     
-        //                 sh "kubectl get all -n filetracker"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
-        //                 sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
-        //                 // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
-                        
-
-                    
-        //         }
-        //     }
-        // }
          
 
-       stage('Kill pods that are running') {
+       stage('Kill pods if running') {
             steps {
                 script {
                     
-                    // Initialize a variable to track if pods were found before
+                    // Initialize variables to track pod and pipeline status
                     def firstRunCompleted = false
                     def breakLoop = false
                     def podsFound = false
 
                     // Loop until pods are not found or for a specific number of iterations
-                    def maxIterations = 5 // Adjust as needed
+                    def maxIterations = 5 
                     def currentIteration = 0
                     
 
@@ -64,7 +43,6 @@ pipeline {
                         def e2eTestJobExists = podStatuses['e2eTestJobExists']
                         def podStatusesJson = podStatuses['podStatuses']
 
-                        // echo "${podStatuses}"
 
 
 
@@ -100,7 +78,7 @@ pipeline {
                                 sleep 15 // Wait for 15 seconds before checking again
                             }
                         } else {
-                            echo "found none running so exiting loop"
+                            echo "No running or terminating pods. Proceeding to create testing pods..."
                             breakLoop = true
                         }
 
@@ -118,11 +96,9 @@ pipeline {
         stage('Start API Pods') {
             steps {
                 script {
-                     
-                        
+
                         sh 'kubectl apply -f express-api/kubernetes'
 
-                    
                 }
             }
         }
@@ -135,8 +111,7 @@ pipeline {
                     def delaySeconds = 15
                     def attempts = 0
 
-                    sh "kubectl get all -n filetracker"
-                    // sh "kubectl logs express-app-58464b4785-pr2g5 -n filetracker"
+                    // sh "kubectl get all -n filetracker"
 
 
                     retry(retries) {
@@ -145,26 +120,23 @@ pipeline {
 
                         echo "Running UI stage...Attempt ${attempts}"
 
-                        // Inside the retry block, we'll retry the check for API status
-                        
+                        // Execute curl command to check if api endpoint returns successful response
+                        def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://express-app-service.filetracker/students', returnStdout: true).trim()
                             
-                            // Execute curl command to check if api endpoint returns successful response
-                            def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://express-app-service.filetracker/students', returnStdout: true).trim()
-                                
-                            // Convert output to integer
-                            def statusCode = statusOutput.toInteger()
+                        // Convert output to integer
+                        def statusCode = statusOutput.toInteger()
 
-                            if (statusCode == 200) {
-                                sh "kubectl apply -f ui-app/kubernetes"
-                                echo "found api and started ui"
-                            } else {
-                                echo "API not yet up. Returned status code - ${statusCode} when probed"
-                                echo "Retrying in ${delaySeconds} seconds..."
-                                sleep delaySeconds
-                                echo "API not up. Retry ${attempt}"
-                            }
+                        if (statusCode == 200) {
+                            sh "kubectl apply -f ui-app/kubernetes"
+                            echo "found api and started ui"
+                        } else {
+                            echo "API not yet up. Returned status code - ${statusCode} when probed"
+                            echo "Retrying in ${delaySeconds} seconds..."
+                            sleep delaySeconds
+                            echo "API not up. Retry ${attempt}"
+                        }
 
-                            sh 'kubectl get deployments -n filetracker'
+                        sh 'kubectl get deployments -n filetracker'
                         
                     }
                 }
@@ -195,12 +167,9 @@ pipeline {
 
                             if (statusCode == 200) {
                                 echo "Found UI. Starting Cypress Job"
-                                 // remove old report
-                                // sh 'rm -d /shared/cypress/reports/html'
+                                // remove old report
                                 sh 'rm -f /shared/cypress/reports/mochawesome.html'
                                 sh 'rm -f /shared/cypress/reports/mochawesome.json'
-                                // sh 'rm -d /shared/cypress' 
-                                // sh 'rm -d /shared/app' 
 
                                 sh 'kubectl apply -f cypress-tests/kubernetes'
 
@@ -237,7 +206,6 @@ pipeline {
             steps {
                 script {
 
-                    
                     waitForReport(uiPod)
 
                     sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
@@ -254,7 +222,7 @@ pipeline {
             steps {
                 script {
 
-                    // Command to fetch the JSON report from the pod
+                    // fetch the JSON report from the pod
                     def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
 
                     echo "${jsonReport}"
