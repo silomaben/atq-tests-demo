@@ -250,7 +250,7 @@ pipeline {
                     sh "kubectl delete -n filetracker service express-app-service"
 
                     // Check deploy status and stop pipeline if deploy is false
-                    if (!deploy) {
+                    if (deploy==false) {
                         error "Deployment failed. Stopping pipeline."
                     } 
                     
