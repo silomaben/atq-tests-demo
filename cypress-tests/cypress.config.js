@@ -13,7 +13,7 @@ module.exports = defineConfig({
     quest: true
   },
   e2e: {
-    baseUrl: "http://ui-app-service.jenkins.svc.cluster.local",
+    baseUrl: "http://ui-app-service.filetracker",
     setupNodeEvents(on, config) {
       require('cypress-mochawesome-reporter/plugin')(on);
     },
