@@ -18,7 +18,26 @@ pipeline {
 
     stages {
 
-       
+       // stage('logs') {
+        //     steps {
+        //         script {
+        //             echo"logs yessir \n\n\n"
+                     
+        //                 sh "kubectl get all -n filetracker"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
+        //                 sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
+        //                 // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
+                        
+
+                    
+        //         }
+        //     }
+        // }
          
 
        stage('Kill pods that are running') {
@@ -220,89 +239,68 @@ pipeline {
 
                     
                     waitForReport(uiPod)
-                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
-                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
-                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
-                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
-                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
-                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports"
-                    // sh 'rm -d /shared/app'
-                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+
                     sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
-                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.json", onlyIfSuccessful: true
+
+                }
+            }
+        }
+
+        
+        
+
+        stage('Deployment decision & killing test pods') {
+            steps {
+                script {
+
+                    // Command to fetch the JSON report from the pod
+                    def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
+
+                    // Parse the JSON report string into a JSON object
+                    def reportObj = readJSON text: jsonReport
+
+                    // Extract the 'stats' object from the JSON report
+                    def stats = reportObj.stats
+
+                    // Check if all tests passed
+                    if (stats.passes == stats.tests) {
+                        echo "All tests passed!"
+                        deploy = true
+                    } else {
+                        echo "Some tests failed. Investigate and take necessary actions."
+                        
+                    }
+
+                    // Delete pods and services
+                    sh "kubectl delete -n filetracker deployment express-app"
+                    sh "kubectl delete -n filetracker deployment ui-app"
+                    sh "kubectl delete -n filetracker job e2e-test-app-job"
+                    sh "kubectl delete -n filetracker service ui-app-service"
+                    sh "kubectl delete -n filetracker service express-app-service"
+
+                    // Check deploy status and stop pipeline if deploy is false
+                    if (!deploy) {
+                        error "Deployment failed. Stopping pipeline."
+                    } 
                     
                 }
             }
         }
 
-        // stage('logs') {
-        //     steps {
-        //         script {
-        //             echo"logs yessir \n\n\n"
-                     
-        //                 sh "kubectl get all -n filetracker"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
-        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
-        //                 sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
-        //                 // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
-                        
+        stage('Deploy') {
+            steps {
+                script {
+                    if(deploy==true){
+                        echo "Niiice!!! Deploying ATQ now."
+                    } 
+                }
+            }
+        }
 
-                    
-        //         }
-        //     }
-        // }
-        
-
-        // stage('Deciding deployment and stopping testing pods') {
-        //     steps {
-        //         script {
-                    
-
-        //                 // Run kubectl logs command and store the output
-        //                 logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
-        //                 echo "the logs are"
-
-
-        //                 echo "${logs}"
-
-        //                 // Check if the text "all specs passed" is present in the logs
-        //                 if ( sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).contains("All specs passed")) {
-        //                     echo "All Cypress specs passed. Proceeding with deployment."
-        //                     deploy = true
-        //                 } else {
-        //                      error "Some tests are failing. Please review the test report to identify and address the failures before retrying. Deployment aborted."
-        //                 }
-
-        //                 //kill the created pods and service.
-
-        //                 sh "kubectl delete -n filetracker deployment express-app"
-        //                 sh "kubectl delete -n filetracker deployment ui-app"
-        //                 sh "kubectl delete -n filetracker job e2e-test-app-job"
-        //                 sh "kubectl delete -n filetracker service ui-app-service"
-        //                 sh "kubectl delete -n filetracker service express-app-service"
-                    
-        //         }
-        //     }
-        // }
-
-        // stage('Deploy') {
-        //     steps {
-        //         script {
-        //             if(deploy==true){
-        //                 echo "Niiice!!! Deploying ATQ now."
-        //             } else {
-        //                 error "Deploying aborted. Check and resolve the failing test and try again!"
-        //             }
-        //         }
-        //     }
-        // }
+        post{
+            fai
+        }
 
     }
 }
