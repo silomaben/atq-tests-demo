@@ -177,7 +177,7 @@ pipeline {
                             if (statusCode == 200) {
                                 echo "Found UI. Starting Cypress Job"
                                  // remove old report
-                                sh 'rm -d /shared/cypress/reports/html'
+                                // sh 'rm -d /shared/cypress/reports/html'
                                 sh 'rm -f /shared/cypress/reports/mochawesome.html'
                                 sh 'rm -f /shared/cypress/reports/mochawesome.json'
                                 // sh 'rm -d /shared/cypress' 
