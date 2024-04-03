@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "cy:run": "cypress run --spec 'cypress/e2e/*' --reporter mochawesome --reporter-options reportDir=reports/json"
+    "cy:run": "cypress run --spec 'cypress/e2e/*' --reporter mochawesome --reporter-options reportDir=cypress/reports/json"
   },
   "keywords": [],
   "author": "",

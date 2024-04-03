@@ -21,178 +21,178 @@ pipeline {
        
          
 
-    //    stage('Kill pods that are running') {
-    //         steps {
-    //             script {
+       stage('Kill pods that are running') {
+            steps {
+                script {
                     
-    //                 // Initialize a variable to track if pods were found before
-    //                 def firstRunCompleted = false
-    //                 def breakLoop = false
-    //                 def podsFound = false
+                    // Initialize a variable to track if pods were found before
+                    def firstRunCompleted = false
+                    def breakLoop = false
+                    def podsFound = false
 
-    //                 // Loop until pods are not found or for a specific number of iterations
-    //                 def maxIterations = 5 // Adjust as needed
-    //                 def currentIteration = 0
+                    // Loop until pods are not found or for a specific number of iterations
+                    def maxIterations = 5 // Adjust as needed
+                    def currentIteration = 0
                     
 
-    //                 while (currentIteration < maxIterations && breakLoop==false) {
-    //                     echo "Checking pod existence and statuses..."
-    //                     def podStatuses = checkExistence()
-    //                     def expressAppExists = podStatuses['expressAppExists']
-    //                     def uiAppExists = podStatuses['uiAppExists']
-    //                     def expressAppServiceExists = podStatuses['expressAppServiceExists']
-    //                     def uiAppServiceExists = podStatuses['uiAppServiceExists']
-    //                     def e2eTestJobExists = podStatuses['e2eTestJobExists']
-    //                     def podStatusesJson = podStatuses['podStatuses']
+                    while (currentIteration < maxIterations && breakLoop==false) {
+                        echo "Checking pod existence and statuses..."
+                        def podStatuses = checkExistence()
+                        def expressAppExists = podStatuses['expressAppExists']
+                        def uiAppExists = podStatuses['uiAppExists']
+                        def expressAppServiceExists = podStatuses['expressAppServiceExists']
+                        def uiAppServiceExists = podStatuses['uiAppServiceExists']
+                        def e2eTestJobExists = podStatuses['e2eTestJobExists']
+                        def podStatusesJson = podStatuses['podStatuses']
 
-    //                     // echo "${podStatuses}"
-
-
+                        // echo "${podStatuses}"
 
 
 
-    //                     // Check if any pods are found
-    //                     if (expressAppExists || uiAppExists || expressAppServiceExists || uiAppServiceExists || e2eTestJobExists || podStatusesJson.contains("Terminating")) {
 
-    //                         // Delete pods only if it's the first time they are found
-    //                         if (!firstRunCompleted) {
-    //                             echo "Deleting pods..."
-    //                             if (expressAppExists) {
-    //                                 sh "kubectl delete -n filetracker deployment express-app"
+
+                        // Check if any pods are found
+                        if (expressAppExists || uiAppExists || expressAppServiceExists || uiAppServiceExists || e2eTestJobExists || podStatusesJson.contains("Terminating")) {
+
+                            // Delete pods only if it's the first time they are found
+                            if (!firstRunCompleted) {
+                                echo "Deleting pods..."
+                                if (expressAppExists) {
+                                    sh "kubectl delete -n filetracker deployment express-app"
                                     
-    //                             }
-    //                             if (uiAppExists) {
-    //                                 sh "kubectl delete -n filetracker deployment ui-app"
-    //                             }
-    //                             if (expressAppServiceExists) {
-    //                                 sh "kubectl delete -n filetracker service express-app-service"
-    //                             }
-    //                             if (uiAppServiceExists) {
-    //                                 sh "kubectl delete -n filetracker service ui-app-service"
-    //                             }
-    //                             if (e2eTestJobExists) {
-    //                                 sh "kubectl delete -n filetracker job e2e-test-app-job"
-    //                             }
+                                }
+                                if (uiAppExists) {
+                                    sh "kubectl delete -n filetracker deployment ui-app"
+                                }
+                                if (expressAppServiceExists) {
+                                    sh "kubectl delete -n filetracker service express-app-service"
+                                }
+                                if (uiAppServiceExists) {
+                                    sh "kubectl delete -n filetracker service ui-app-service"
+                                }
+                                if (e2eTestJobExists) {
+                                    sh "kubectl delete -n filetracker job e2e-test-app-job"
+                                }
 
-    //                             firstRunCompleted = true
-    //                             podsFound = true
-    //                         } else {
-    //                             echo "Not all pods have finished terminating. Waiting 15 secs for pods to terminate..."
-    //                             sleep 15 // Wait for 15 seconds before checking again
-    //                         }
-    //                     } else {
-    //                         echo "found none running so exiting loop"
-    //                         breakLoop = true
-    //                     }
+                                firstRunCompleted = true
+                                podsFound = true
+                            } else {
+                                echo "Not all pods have finished terminating. Waiting 15 secs for pods to terminate..."
+                                sleep 15 // Wait for 15 seconds before checking again
+                            }
+                        } else {
+                            echo "found none running so exiting loop"
+                            breakLoop = true
+                        }
 
-    //                     currentIteration++
-    //                 }
+                        currentIteration++
+                    }
 
-    //                 if (!podsFound) {
-    //                     echo "No pods found or terminated."
-    //                 }
+                    if (!podsFound) {
+                        echo "No pods found or terminated."
+                    }
                     
-    //             }
-    //         }
-    //     }
+                }
+            }
+        }
 
-    //     stage('Start API Pods') {
-    //         steps {
-    //             script {
+        stage('Start API Pods') {
+            steps {
+                script {
                      
                         
-    //                     sh 'kubectl apply -f express-api/kubernetes'
+                        sh 'kubectl apply -f express-api/kubernetes'
 
                     
-    //             }
-    //         }
-    //     }
+                }
+            }
+        }
 
         
-    //     stage('Run UI') {
-    //         steps {
-    //             script {
-    //                 def retries = 24
-    //                 def delaySeconds = 15
-    //                 def attempts = 0
+        stage('Run UI') {
+            steps {
+                script {
+                    def retries = 24
+                    def delaySeconds = 15
+                    def attempts = 0
 
-    //                 sh "kubectl get all -n filetracker"
-    //                 // sh "kubectl logs express-app-58464b4785-pr2g5 -n filetracker"
+                    sh "kubectl get all -n filetracker"
+                    // sh "kubectl logs express-app-58464b4785-pr2g5 -n filetracker"
 
 
-    //                 retry(retries) {
+                    retry(retries) {
 
-    //                     attempts++
+                        attempts++
 
-    //                     echo "Running UI stage...Attempt ${attempts}"
+                        echo "Running UI stage...Attempt ${attempts}"
 
-    //                     // Inside the retry block, we'll retry the check for API status
+                        // Inside the retry block, we'll retry the check for API status
                         
                             
-    //                         // Execute curl command to check if api endpoint returns successful response
-    //                         def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://express-app-service.filetracker/students', returnStdout: true).trim()
+                            // Execute curl command to check if api endpoint returns successful response
+                            def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://express-app-service.filetracker/students', returnStdout: true).trim()
                                 
-    //                         // Convert output to integer
-    //                         def statusCode = statusOutput.toInteger()
+                            // Convert output to integer
+                            def statusCode = statusOutput.toInteger()
 
-    //                         if (statusCode == 200) {
-    //                             sh "kubectl apply -f ui-app/kubernetes"
-    //                             echo "found api and started ui"
-    //                         } else {
-    //                             echo "API not yet up. Returned status code - ${statusCode} when probed"
-    //                             echo "Retrying in ${delaySeconds} seconds..."
-    //                             sleep delaySeconds
-    //                             echo "API not up. Retry ${attempt}"
-    //                         }
+                            if (statusCode == 200) {
+                                sh "kubectl apply -f ui-app/kubernetes"
+                                echo "found api and started ui"
+                            } else {
+                                echo "API not yet up. Returned status code - ${statusCode} when probed"
+                                echo "Retrying in ${delaySeconds} seconds..."
+                                sleep delaySeconds
+                                echo "API not up. Retry ${attempt}"
+                            }
 
-    //                         sh 'kubectl get deployments -n filetracker'
+                            sh 'kubectl get deployments -n filetracker'
                         
-    //                 }
-    //             }
-    //         }
-    //     }
+                    }
+                }
+            }
+        }
 
-    //     stage('Run cypress test') {
-    //         steps {
-    //             script {
-    //                 def retries = 24
-    //                 def delaySeconds = 15
-    //                 def attempts = 0
+        stage('Run cypress test') {
+            steps {
+                script {
+                    def retries = 24
+                    def delaySeconds = 15
+                    def attempts = 0
 
 
-    //                 retry(retries) {
+                    retry(retries) {
 
-    //                     attempts++
+                        attempts++
 
-    //                     echo "Running Cypress tests stage...Attempt ${attempts}"
+                        echo "Running Cypress tests stage...Attempt ${attempts}"
 
                         
-    //                         // Execute curl command to check if api endpoint returns successful response
-    //                         def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://ui-app-service.filetracker/', returnStdout: true).trim()
+                            // Execute curl command to check if api endpoint returns successful response
+                            def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://ui-app-service.filetracker/', returnStdout: true).trim()
                                 
-    //                         // Convert output to integer
-    //                         def statusCode = statusOutput.toInteger()
+                            // Convert output to integer
+                            def statusCode = statusOutput.toInteger()
 
 
-    //                         if (statusCode == 200) {
-    //                             echo "Found UI. Starting Cypress Job"
-    //                              // remove old report
-    //                             sh 'rm -f /shared/cypress/reports/html/index.html' 
+                            if (statusCode == 200) {
+                                echo "Found UI. Starting Cypress Job"
+                                 // remove old report
+                                sh 'rm -f /shared/cypress/reports/html/index.html' 
 
-    //                             sh 'kubectl apply -f cypress-tests/kubernetes'
+                                sh 'kubectl apply -f cypress-tests/kubernetes'
 
                                 
-    //                         } else {
-    //                             echo "UI not yet up. Returned status code - ${statusCode} when probed"
-    //                             echo "Retrying in ${delaySeconds} seconds..."
-    //                             sleep delaySeconds
-    //                             echo "UI not up. Retry ${attempt}"
-    //                         }
+                            } else {
+                                echo "UI not yet up. Returned status code - ${statusCode} when probed"
+                                echo "Retrying in ${delaySeconds} seconds..."
+                                sleep delaySeconds
+                                echo "UI not up. Retry ${attempt}"
+                            }
                         
-    //                 }
-    //             }
-    //         }
-    //     }
+                    }
+                }
+            }
+        }
 
 
         stage('Get Pod Names') {
@@ -210,88 +210,89 @@ pipeline {
 
             
 
-        // stage('Wait for tests to run and report generation') {
-        //     steps {
-        //         script {
-
-                    
-        //             waitForReport(uiPod)
-        //             sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports"
-        //             sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-        //             sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-        //             sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/.jsons/mochawesome.json > report_build_${env.BUILD_NUMBER}.html"
-        //             archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
-                    
-        //         }
-        //     }
-        // }
-
-        stage('logs') {
+        stage('Wait for tests to run and report generation') {
             steps {
                 script {
-                    echo"logs yessir \n\n\n"
-                     
-                        sh "kubectl get all -n filetracker"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/html"
-                        sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
-                        // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
-                        
 
+                    
+                    waitForReport(uiPod)
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports"
+                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
+                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
                     
                 }
             }
         }
+
+        // stage('logs') {
+        //     steps {
+        //         script {
+        //             echo"logs yessir \n\n\n"
+                     
+        //                 sh "kubectl get all -n filetracker"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/html"
+        //                 sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
+        //                 // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
+                        
+
+                    
+        //         }
+        //     }
+        // }
         
 
-        // stage('Deciding deployment and stopping testing pods') {
-        //     steps {
-        //         script {
+        stage('Deciding deployment and stopping testing pods') {
+            steps {
+                script {
                     
 
-        //                 // Run kubectl logs command and store the output
-        //                 logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
-        //                 echo "the logs are"
+                        // Run kubectl logs command and store the output
+                        logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+                        echo "the logs are"
 
 
-        //                 echo "${logs}"
+                        echo "${logs}"
 
-        //                 // Check if the text "all specs passed" is present in the logs
-        //                 if ( sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).contains("All specs passed")) {
-        //                     echo "All Cypress specs passed. Proceeding with deployment."
-        //                     deploy = true
-        //                 } else {
-        //                      error "Some tests are failing. Please review the test report to identify and address the failures before retrying. Deployment aborted."
-        //                 }
+                        // Check if the text "all specs passed" is present in the logs
+                        if ( sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).contains("All specs passed")) {
+                            echo "All Cypress specs passed. Proceeding with deployment."
+                            deploy = true
+                        } else {
+                             error "Some tests are failing. Please review the test report to identify and address the failures before retrying. Deployment aborted."
+                        }
 
-        //                 //kill the created pods and service.
+                        //kill the created pods and service.
 
-        //                 sh "kubectl delete -n filetracker deployment express-app"
-        //                 sh "kubectl delete -n filetracker deployment ui-app"
-        //                 sh "kubectl delete -n filetracker job e2e-test-app-job"
-        //                 sh "kubectl delete -n filetracker service ui-app-service"
-        //                 sh "kubectl delete -n filetracker service express-app-service"
+                        sh "kubectl delete -n filetracker deployment express-app"
+                        sh "kubectl delete -n filetracker deployment ui-app"
+                        sh "kubectl delete -n filetracker job e2e-test-app-job"
+                        sh "kubectl delete -n filetracker service ui-app-service"
+                        sh "kubectl delete -n filetracker service express-app-service"
                     
-        //         }
-        //     }
-        // }
+                }
+            }
+        }
 
-        // stage('Deploy') {
-        //     steps {
-        //         script {
-        //             if(deploy==true){
-        //                 echo "Niiice!!! Deploying ATQ now."
-        //             } else {
-        //                 error "Deploying aborted. Check and resolve the failing test and try again!"
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Deploy') {
+            steps {
+                script {
+                    if(deploy==true){
+                        echo "Niiice!!! Deploying ATQ now."
+                    } else {
+                        error "Deploying aborted. Check and resolve the failing test and try again!"
+                    }
+                }
+            }
+        }
 
     }
 }
