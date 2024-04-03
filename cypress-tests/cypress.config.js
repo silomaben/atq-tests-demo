@@ -6,6 +6,7 @@ module.exports = defineConfig({
     charts: true,
     embeddedScreenshots: true,
     html:true,
+    json:true,
     inlineAssets: true,
     saveAllAttempts: false,
     log: true, 

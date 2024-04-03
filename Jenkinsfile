@@ -155,7 +155,7 @@ pipeline {
 
                         attempts++
 
-                        echo "Running Cypress tests stage...Attempt ${attempts}"
+                        echo "Waiting for UI to run...Attempt ${attempts}"
 
                         
                             // Execute curl command to check if api endpoint returns successful response
@@ -178,7 +178,7 @@ pipeline {
                                 echo "UI not yet up. Returned status code - ${statusCode} when probed"
                                 echo "Retrying in ${delaySeconds} seconds..."
                                 sleep delaySeconds
-                                echo "UI not up. Retry ${attempt}"
+                                echo "UI not up. Retry ${attempts}"
                             }
                         
                     }
