@@ -210,44 +210,48 @@ pipeline {
 
             
 
-    //     stage('Wait for tests to run and report generation') {
-    //         steps {
-    //             script {
-
-                    
-    //                 waitForReport(uiPod)
-    //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports"
-    //                 sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-    //                 sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-    //                 // sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
-    //                 // sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
-    //                 archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
-                    
-    //             }
-    //         }
-    //     }
-
-        stage('logs') {
+        stage('Wait for tests to run and report generation') {
             steps {
                 script {
-                    echo"logs yessir \n\n\n"
-                     
-                        sh "kubectl get all -n filetracker"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
-                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/html"
-                        sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
-                        // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
-                        
 
+                    
+                    waitForReport(uiPod)
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
+                    // sh 'rm -d /shared/app'
+                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/json/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/json/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
+                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
                     
                 }
             }
         }
+
+        // stage('logs') {
+        //     steps {
+        //         script {
+        //             echo"logs yessir \n\n\n"
+                     
+        //                 sh "kubectl get all -n filetracker"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
+        //                 sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/html"
+        //                 sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
+        //                 // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
+                        
+
+                    
+        //         }
+        //     }
+        // }
         
 
         // stage('Deciding deployment and stopping testing pods') {
