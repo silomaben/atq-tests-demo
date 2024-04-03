@@ -217,10 +217,10 @@ pipeline {
                     
                     waitForReport(uiPod)
                     sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports"
-                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
+                    // sh "kubectl exec -n filetracker $uiPod -- cat /shared/app/reports/jsons/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
                     
                 }
