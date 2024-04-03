@@ -232,6 +232,7 @@ pipeline {
                     sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
                     sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
+                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.json", onlyIfSuccessful: true
                     
                 }
             }
