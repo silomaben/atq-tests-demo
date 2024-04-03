@@ -177,7 +177,9 @@ pipeline {
                             if (statusCode == 200) {
                                 echo "Found UI. Starting Cypress Job"
                                  // remove old report
-                                // sh 'rm -f /shared/cypress/reports/html/index.html' 
+                                sh 'rm -d /shared/cypress/reports/html'
+                                sh 'rm -f /shared/cypress/reports/mochawesome.html'
+                                sh 'rm -f /shared/cypress/reports/mochawesome.json'
                                 // sh 'rm -d /shared/cypress' 
                                 // sh 'rm -d /shared/app' 
 
@@ -227,8 +229,8 @@ pipeline {
                     // sh 'rm -d /shared/app'
                     // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
                     // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/json/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/json/mochawesome.json > report_build_${env.BUILD_NUMBER}.json"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reportsmochawesome.json > report_build_${env.BUILD_NUMBER}.json"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
                     
                 }
