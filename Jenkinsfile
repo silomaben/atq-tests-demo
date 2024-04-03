@@ -238,7 +238,6 @@ pipeline {
                         echo "All tests passed!"
                         deploy = true
                     } else {
-                        echo "Some tests failed. Investigate and take necessary actions."
                         deploy = false
                     }
 
@@ -251,7 +250,7 @@ pipeline {
 
                     // Check deploy status and stop pipeline if deploy is false
                     if (deploy==false) {
-                        error "Deployment failed. Stopping pipeline."
+                        error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
                     } 
                     
                 }
