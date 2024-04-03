@@ -225,7 +225,7 @@ pipeline {
                     // fetch the JSON report from the pod
                     def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
 
-                    echo "${jsonReport}"
+                   
 
                     // Parse the JSON report string into a JSON object
                     def reportObj = readJSON text: jsonReport

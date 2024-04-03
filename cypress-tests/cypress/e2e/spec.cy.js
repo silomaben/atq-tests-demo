@@ -13,6 +13,6 @@ describe('cypress works!', () => {
     cy.visit('/');
     
     
-    cy.get(".text-2353xl").contains("Students List")
+    cy.get(".text-2xl").contains("Students List")
   })
 })
