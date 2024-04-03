@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+            node {
+                label 'alpha'
+            }
+        }
     
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
@@ -18,10 +22,7 @@ pipeline {
        stage('Kill pods if running') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
-                    // fetch kubectl
-                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-                        sh 'chmod u+x ./kubectl'
+                    
                     // Initialize variables to track pod and pipeline status
                     def firstRunCompleted = false
                     def breakLoop = false
@@ -87,8 +88,6 @@ pipeline {
                     if (!podsFound) {
                         echo "No pods found or terminated."
                     }
-
-                    }
                     
                 }
             }
@@ -97,10 +96,9 @@ pipeline {
         stage('Start API Pods') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
 
                         sh 'kubectl apply -f express-api/kubernetes'
-                    }
+
                 }
             }
         }
@@ -109,7 +107,6 @@ pipeline {
         stage('Run UI') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                     def retries = 24
                     def delaySeconds = 15
                     def attempts = 0
@@ -143,15 +140,12 @@ pipeline {
                         
                     }
                 }
-                }
             }
         }
 
         stage('Run cypress test') {
             steps {
                 script {
-
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                     def retries = 24
                     def delaySeconds = 15
                     def attempts = 0
@@ -189,7 +183,6 @@ pipeline {
                         
                     }
                 }
-                }
             }
         }
 
@@ -197,13 +190,12 @@ pipeline {
         stage('Get Pod Names') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
                         
                         uiPod = sh(script: 'kubectl get pods -n filetracker -l app=ui-app -o jsonpath="{.items[0].metadata.name}"', returnStdout: true).trim()
                         echo "Found pod name: $uiPod"
                         cypressPod = sh(script: "kubectl get pods -n filetracker -l job-name=e2e-test-app-job -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
                         echo "Found Cypress pod name: $cypressPod"
-                    }
+                    
                 }
             }
         }
@@ -213,13 +205,12 @@ pipeline {
         stage('Wait for tests to run and report generation') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
 
                     waitForReport(uiPod)
 
                     sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
-                    }
+
                 }
             }
         }
@@ -230,7 +221,6 @@ pipeline {
         stage('Deployment decision & killing test pods') {
             steps {
                 script {
-                    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
 
                     sh 'kubectl get all -n filetracker'
 
@@ -266,7 +256,6 @@ pipeline {
                     if (deploy==false) {
                         error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
                     } 
-                    }
                     
                 }
             }
@@ -290,7 +279,6 @@ pipeline {
 def waitForReport(podName) {
     timeout(time: 5, unit: 'MINUTES') {
         script {
-            withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
             def counter = 0 
             while (!fileExists(podName,'filetracker','/shared/cypress/reports/html/index.html')) {
                 sh "kubectl get all -n filetracker"
@@ -298,28 +286,20 @@ def waitForReport(podName) {
                 echo "Waiting for index.html file to exist... (Attempt ${counter})"
                 sleep 10 
             }
-            }
         }
     }
 }
 
 
 def fileExists(podName, namespace, filePath) {
-    withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
     def command = "kubectl exec -it -n ${namespace} ${podName} -- ls ${filePath}"
     return sh(script: command, returnStatus: true) == 0
-    }
 }
 
 
 
 def checkExistence() {
         // Check if express-app deployment exists
-        withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
-
-            // fetch kubectl
-                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-                        sh 'chmod u+x ./kubectl'
         def expressAppExists = sh(
             script: "kubectl get -n filetracker deployment express-app >/dev/null 2>&1",
             returnStatus: true
@@ -355,7 +335,6 @@ def checkExistence() {
                         script: 'kubectl -n filetracker get all',
                         returnStdout: true
                     ).trim()
-        }
     
     
 
