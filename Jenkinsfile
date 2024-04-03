@@ -235,6 +235,7 @@ pipeline {
                         sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared"
                         sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
                         sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
+                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
                         sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
                         sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
                         sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/html"
