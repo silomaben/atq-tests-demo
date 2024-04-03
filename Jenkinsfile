@@ -316,6 +316,10 @@ def fileExists(podName, namespace, filePath) {
 def checkExistence() {
         // Check if express-app deployment exists
         withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: 'minikube', contextName: '', credentialsId: 'SECRET_TOKEN', namespace: 'default', serverUrl: 'https://192.168.49.2:8443']]) {
+
+            // fetch kubectl
+                        sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+                        sh 'chmod u+x ./kubectl'
         def expressAppExists = sh(
             script: "kubectl get -n filetracker deployment express-app >/dev/null 2>&1",
             returnStatus: true
