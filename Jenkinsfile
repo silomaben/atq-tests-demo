@@ -22,6 +22,9 @@ pipeline {
        stage('Kill pods if running') {
             steps {
                 script {
+
+                    sh "pwd"
+                    // sh "rm -r /shared/app/"
                     
                     // Initialize variables to track pod and pipeline status
                     def firstRunCompleted = false
