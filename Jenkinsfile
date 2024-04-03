@@ -177,7 +177,9 @@ pipeline {
                             if (statusCode == 200) {
                                 echo "Found UI. Starting Cypress Job"
                                  // remove old report
-                                sh 'rm -f /shared/cypress/reports/html/index.html' 
+                                // sh 'rm -f /shared/cypress/reports/html/index.html' 
+                                sh 'rm -d /shared/cypress' 
+                                sh 'rm -d /shared/app' 
 
                                 sh 'kubectl apply -f cypress-tests/kubernetes'
 
@@ -220,6 +222,9 @@ pipeline {
                     sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app"
                     sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports"
                     sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/app/reports/json"
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports"
+                    sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/json"
                     // sh 'rm -d /shared/app'
                     // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
                     // sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
