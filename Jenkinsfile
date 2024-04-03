@@ -136,7 +136,7 @@ pipeline {
                             echo "API not up. Retry ${attempt}"
                         }
 
-                        sh 'kubectl get deployments -n filetracker'
+                        
                         
                     }
                 }
@@ -221,6 +221,10 @@ pipeline {
         stage('Deployment decision & killing test pods') {
             steps {
                 script {
+
+                    sh 'kubectl get all -n filetracker'
+
+
 
                     // fetch the JSON report from the pod
                     def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
