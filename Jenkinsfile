@@ -298,9 +298,7 @@ pipeline {
             }
         }
 
-        post{
-            fai
-        }
+        
 
     }
 }
