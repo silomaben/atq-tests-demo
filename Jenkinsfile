@@ -239,7 +239,7 @@ pipeline {
                         deploy = true
                     } else {
                         echo "Some tests failed. Investigate and take necessary actions."
-                        
+                        deploy = false
                     }
 
                     // Delete pods and services
