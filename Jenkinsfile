@@ -18,22 +18,7 @@ pipeline {
 
     stages {
 
-           stage('Start API Pods') {
-            steps {
-                script {
-                     
-                        sh "kubectl get all -n filetracker"
-                        sh "kubectl exec -it -n filetracker ui-app-587bb4fb66-pmr8w -- ls -la /shared/cypress"
-                        sh "kubectl exec -it -n filetracker ui-app-587bb4fb66-pmr8w -- ls -la /shared/cypress/reports/"
-                        sh "kubectl exec -it -n filetracker ui-app-587bb4fb66-pmr8w -- ls -la /shared/cypress/reports/html"
-                        sh "kubectl logs -n filetracker e2e-test-app-job-2w7kt -c e2e-test-app"
-                        // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
-                        
-
-                    
-                }
-            }
-        }
+       
          
 
        stage('Kill pods that are running') {
@@ -218,6 +203,24 @@ pipeline {
                         echo "Found pod name: $uiPod"
                         cypressPod = sh(script: "kubectl get pods -n filetracker -l job-name=e2e-test-app-job -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
                         echo "Found Cypress pod name: $cypressPod"
+                    
+                }
+            }
+        }
+
+            stage('logs') {
+            steps {
+                script {
+                    echo"logs yessir \n\n\n"
+                     
+                        sh "kubectl get all -n filetracker"
+                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress"
+                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/"
+                        sh "kubectl exec -it -n filetracker $uiPod -- ls -la /shared/cypress/reports/html"
+                        sh "kubectl logs -n filetracker $cypressPod -c e2e-test-app"
+                        // kubectl exec -it -n filetracker e2e-test-app-job-xgwmp -- /bin/sh
+                        
+
                     
                 }
             }
