@@ -185,6 +185,8 @@ pipeline {
                                 // remove old report
 
                                 // sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
+                                sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
+                                
 
                                 // sh 'rm -f /shared/cypress/reports/html/index.html'
                                 // sh 'rm -f /shared/cypress/reports/mochawesome.html'
