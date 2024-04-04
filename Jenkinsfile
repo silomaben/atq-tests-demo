@@ -184,8 +184,8 @@ pipeline {
                                 echo "Found UI. Starting Cypress Job"
                                 // remove old report
 
-                                sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress"
-                                sh "kubectl exec -n filetracker $uiPod -- rm /shared/app"
+                                sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
+                                sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/app"
 
                                 // sh 'rm -f /shared/cypress/reports/html/index.html'
                                 // sh 'rm -f /shared/cypress/reports/mochawesome.html'
