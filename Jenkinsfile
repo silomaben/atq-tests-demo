@@ -238,8 +238,11 @@ pipeline {
         stage('Capture Cypress Logs and decide deployment') {
             steps {
                 script {
+
                     def logs
                     def finished = false
+
+                    sleep 45 
 
                     
                     
