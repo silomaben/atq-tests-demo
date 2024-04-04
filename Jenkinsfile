@@ -220,14 +220,28 @@ pipeline {
             }
         }
 
-        stage('Capture Cypress Logs') {
+    stage('Capture Cypress Logs') {
     steps {
         script {
-            // Run Cypress tests and capture logs
-            def logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true)
+            // Define the number of times to run the loop
+            def numberOfAttempts = 5
+            def logs
             
-            // Print the captured logs
-            echo "${logs}"
+            // Run the command in a loop
+            for (int i = 1; i <= numberOfAttempts; i++) {
+                echo "Attempt ${i}:"
+                
+                // Run Cypress tests and capture logs
+                logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+                
+                // Print the captured logs
+                echo "${logs}"
+                
+                // Add a delay between attempts if needed
+                if (i < numberOfAttempts) {
+                    sleep 10 // Adjust the delay time as needed
+                }
+            }
             
             // You can further process the logs as needed
         }
