@@ -186,7 +186,7 @@ pipeline {
 
                                 // sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
                                 sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
-                                 sleep time: 30
+                                sleep time: 15
                                 sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
                                 
 
@@ -222,18 +222,18 @@ pipeline {
 
             
 
-        // stage('Wait for tests to run and report generation') {
-        //     steps {
-        //         script {
+        stage('Wait for tests to run and report generation') {
+            steps {
+                script {
 
-        //             waitForReport(uiPod)
+                    waitForReport(uiPod)
 
-        //             sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-        //             archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
 
-        //         }
-        //     }
-        // }
+                }
+            }
+        }
 
         stage('Capture Cypress Logs and decide deployment') {
             steps {
@@ -242,7 +242,7 @@ pipeline {
                     def logs
                     def finished = false
 
-                    sleep 45 
+                    sleep 30 
 
                     
                     
@@ -273,11 +273,11 @@ pipeline {
                         deploy = false
                     }
 
-                    // sh "kubectl delete -n filetracker deployment express-app"
-                    // sh "kubectl delete -n filetracker deployment ui-app"
-                    // sh "kubectl delete -n filetracker job e2e-test-app-job"
-                    // sh "kubectl delete -n filetracker service ui-app-service"
-                    // sh "kubectl delete -n filetracker service express-app-service"
+                    sh "kubectl delete -n filetracker deployment express-app"
+                    sh "kubectl delete -n filetracker deployment ui-app"
+                    sh "kubectl delete -n filetracker job e2e-test-app-job"
+                    sh "kubectl delete -n filetracker service ui-app-service"
+                    sh "kubectl delete -n filetracker service express-app-service"
 
                     if (deploy == false){
                         error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
