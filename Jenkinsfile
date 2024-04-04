@@ -146,6 +146,18 @@ pipeline {
             }
         }
 
+         stage('Get Ui Pod Name') {
+            steps {
+                script {
+                        
+                        uiPod = sh(script: 'kubectl get pods -n filetracker -l app=ui-app -o jsonpath="{.items[0].metadata.name}"', returnStdout: true).trim()
+                        echo "Found pod name: $uiPod"
+                       
+                    
+                }
+            }
+        }
+
         stage('Run cypress test') {
             steps {
                 script {
@@ -172,7 +184,7 @@ pipeline {
                                 echo "Found UI. Starting Cypress Job"
                                 // remove old report
 
-                                 sh "kubectl exec -n filetracker ui-app-587bb4fb66-5r9zx -- rm /shared/cypress/reports/html/index.html"
+                                 sh "kubectl exec -n filetracker  -- rm /shared/cypress/reports/html/index.html"
 
                                 sh 'rm -f /shared/cypress/reports/html/index.html'
                                 sh 'rm -f /shared/cypress/reports/mochawesome.html'
@@ -194,12 +206,9 @@ pipeline {
         }
 
 
-        stage('Get Pod Names') {
+        stage('Get Cypress-Tests Pod Name') {
             steps {
                 script {
-                        
-                        uiPod = sh(script: 'kubectl get pods -n filetracker -l app=ui-app -o jsonpath="{.items[0].metadata.name}"', returnStdout: true).trim()
-                        echo "Found pod name: $uiPod"
                         cypressPod = sh(script: "kubectl get pods -n filetracker -l job-name=e2e-test-app-job -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
                         echo "Found Cypress pod name: $cypressPod"
                     
