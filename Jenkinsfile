@@ -172,6 +172,8 @@ pipeline {
                                 echo "Found UI. Starting Cypress Job"
                                 // remove old report
 
+                                 sh "kubectl exec -n filetracker ui-app-587bb4fb66-5r9zx -- rm /shared/cypress/reports/html/index.html"
+
                                 sh 'rm -f /shared/cypress/reports/html/index.html'
                                 sh 'rm -f /shared/cypress/reports/mochawesome.html'
                                 sh 'rm -f /shared/cypress/reports/mochawesome.json'

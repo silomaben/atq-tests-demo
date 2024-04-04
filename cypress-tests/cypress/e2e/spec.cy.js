@@ -1,4 +1,4 @@
-describe('cypress works!', () => {
+describe('cypress works and i can now delete stuff', () => {
   it('Student List was found successfully--for sure', () => {
     cy.wait(4000)
     cy.visit('/')
