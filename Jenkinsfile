@@ -230,6 +230,10 @@ pipeline {
 
                     logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
 
+                    echo "${logs}"
+
+                    // echo "${sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()}"
+
                     // Check if the text "all specs passed" is present in the logs
                     if (logs.contains("All specs passed")) {
                         echo "All tests passed!"
