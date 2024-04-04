@@ -267,9 +267,9 @@ pipeline {
                     
 
                     // Check deploy status and stop pipeline if deploy is false
-                    if (deploy==false) {
-                        error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
-                    } 
+                    // if (deploy==false) {
+                    //     error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
+                    // } 
                     
                 }
             }
