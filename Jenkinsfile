@@ -239,8 +239,7 @@ pipeline {
                     def logs
                     def finished = false
 
-                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
-                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared/cypress"
+                    
                     
                     // Loop until "Container execution finished" is found in the logs
                     while (!finished) {
@@ -260,6 +259,8 @@ pipeline {
                         }
                     }
 
+                    
+
                     if (logs.contains("All specs passed")) {
                         echo "All tests passed!"
                         deploy = true
@@ -267,11 +268,11 @@ pipeline {
                         deploy = false
                     }
 
-                    sh "kubectl delete -n filetracker deployment express-app"
-                    sh "kubectl delete -n filetracker deployment ui-app"
-                    sh "kubectl delete -n filetracker job e2e-test-app-job"
-                    sh "kubectl delete -n filetracker service ui-app-service"
-                    sh "kubectl delete -n filetracker service express-app-service"
+                    // sh "kubectl delete -n filetracker deployment express-app"
+                    // sh "kubectl delete -n filetracker deployment ui-app"
+                    // sh "kubectl delete -n filetracker job e2e-test-app-job"
+                    // sh "kubectl delete -n filetracker service ui-app-service"
+                    // sh "kubectl delete -n filetracker service express-app-service"
 
                     if (deploy == false){
                         error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
@@ -290,6 +291,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
+                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared/cypress"
                     
                     if(deploy==true){
                         echo "Niiice!!! Deploying ATQ now."
