@@ -228,7 +228,7 @@ pipeline {
                 script {
 
 
-                    logs = sh(script: "kubectl logs -n jenkins $cypressPod -c e2e-test-app", returnStdout: true).trim()
+                    logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
 
                     // Check if the text "all specs passed" is present in the logs
                     if (logs.contains("All specs passed")) {
