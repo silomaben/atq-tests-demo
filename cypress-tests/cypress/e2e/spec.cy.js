@@ -10,6 +10,6 @@ describe('cypress works!', () => {
     cy.wait(4000)
     cy.visit('/')
     
-    cy.get(".textasucgi-2xl").contains("Students List")
+    cy.get(".text-2xl").contains("Students List")
   })
 })

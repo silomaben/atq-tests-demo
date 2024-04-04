@@ -220,69 +220,61 @@ pipeline {
             }
         }
 
-    stage('Capture Cypress Logs') {
-    steps {
-        script {
-            // Define the number of times to run the loop
-            def numberOfAttempts = 5
-            def logs
-            
-            // Run the command in a loop
-            for (int i = 1; i <= numberOfAttempts; i++) {
-                echo "Attempt ${i}:"
-                
-                // Run Cypress tests and capture logs
-                logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
-                
-                // Print the captured logs
-                echo "${logs}"
-                
-                // Add a delay between attempts if needed
-                if (i < numberOfAttempts) {
-                    sleep 10 // Adjust the delay time as needed
-                }
-            }
-            
-            // You can further process the logs as needed
-        }
-    }
-}
-
-
-        
-        
-
-        // stage('Deployment decision & killing test pods') {
-        //     steps {
-        //         script {
-
-
-        //             logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
-
-        //             echo "${logs}"
-
-        //             // echo "${sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()}"
-
-        //             // Check if the text "all specs passed" is present in the logs
-        //             if (logs.contains("All specs passed")) {
-        //                 echo "All tests passed!"
-        //                 deploy = true
-        //             } else {
-        //                 deploy = false
-        //             }
-
-        //         }
-        //     }
-        // }
-
-        stage('Deploy') {
+        stage('Capture Cypress Logs and decide deployment') {
             steps {
                 script {
+                    def logs
+                    def finished = false
+                    
+                    // Loop until "Container execution finished" is found in the logs
+                    while (!finished) {
+                        // capture logs
+                        logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+                        
+                        // Print the captured logs
+                        echo "${logs}"
+                        
+                        
+                        if (logs.contains("Container execution finished")) {
+                            echo "Found 'Container execution finished' in the logs."
+                            finished = true
+                        } else {
+                            
+                            sleep 10 
+                        }
+                    }
+
+                    if (logs.contains("All specs passed")) {
+                        echo "All tests passed!"
+                        deploy = true
+                    } else {
+                        deploy = false
+                    }
+
                     sh "kubectl delete -n filetracker deployment express-app"
                     sh "kubectl delete -n filetracker deployment ui-app"
                     sh "kubectl delete -n filetracker job e2e-test-app-job"
                     sh "kubectl delete -n filetracker service ui-app-service"
                     sh "kubectl delete -n filetracker service express-app-service"
+
+                    if (deploy == false){
+                        error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
+                    }
+
+                }
+            }
+        }
+
+
+
+        
+        
+
+
+        stage('Deploy') {
+            steps {
+                script {
+                    
                     if(deploy==true){
                         echo "Niiice!!! Deploying ATQ now."
                     } 
