@@ -4,7 +4,7 @@ import axios from "axios";
 const el = ref()
 
 const students = ref([]);
-let url = "http://express-app-service"
+let url = "http://localhost:5000"
 onMounted(() => {
    axios.get(url + "/students",{
     headers:{

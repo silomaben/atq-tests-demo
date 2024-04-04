@@ -211,7 +211,7 @@ pipeline {
 
                     waitForReport(uiPod)
 
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
 
                 }
@@ -225,28 +225,37 @@ pipeline {
             steps {
                 script {
 
-                    sh 'kubectl get all -n filetracker'
 
+                    logs = sh(script: "kubectl logs -n jenkins $cypressPod -c e2e-test-app", returnStdout: true).trim()
 
-
-                    // fetch the JSON report from the pod
-                    def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
-
-                   
-
-                    // Parse the JSON report string into a JSON object
-                    def reportObj = readJSON text: jsonReport
-
-                    // Extract the 'stats' object from the JSON report
-                    def stats = reportObj.stats
-
-                    // Check if all tests passed
-                    if (stats.passes == stats.tests) {
+                    // Check if the text "all specs passed" is present in the logs
+                    if (logs.contains("All specs passed")) {
                         echo "All tests passed!"
                         deploy = true
                     } else {
                         deploy = false
                     }
+
+                    // sh 'kubectl get all -n filetracker'
+
+                    // // fetch the JSON report from the pod
+                    // def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
+
+                   
+
+                    // // Parse the JSON report string into a JSON object
+                    // def reportObj = readJSON text: jsonReport
+
+                    // // Extract the 'stats' object from the JSON report
+                    // def stats = reportObj.stats
+
+                    // // Check if all tests passed
+                    // if (stats.passes == stats.tests) {
+                    //     echo "All tests passed!"
+                    //     deploy = true
+                    // } else {
+                    //     deploy = false
+                    // }
 
                     // Delete pods and services
                     sh "kubectl delete -n filetracker deployment express-app"
