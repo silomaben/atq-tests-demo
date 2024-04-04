@@ -218,18 +218,18 @@ pipeline {
 
             
 
-        stage('Wait for tests to run and report generation') {
-            steps {
-                script {
+        // stage('Wait for tests to run and report generation') {
+        //     steps {
+        //         script {
 
-                    waitForReport(uiPod)
+        //             waitForReport(uiPod)
 
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
+        //             sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+        //             archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
 
         stage('Capture Cypress Logs and decide deployment') {
             steps {
