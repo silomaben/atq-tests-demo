@@ -238,6 +238,9 @@ pipeline {
                 script {
                     def logs
                     def finished = false
+
+                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
+                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared/cypress"
                     
                     // Loop until "Container execution finished" is found in the logs
                     while (!finished) {
