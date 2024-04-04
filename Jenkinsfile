@@ -220,60 +220,46 @@ pipeline {
             }
         }
 
-        
-        
-
-        stage('Deployment decision & killing test pods') {
-            steps {
-                script {
-
-
-                    logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
-
-                    echo "${logs}"
-
-                    // echo "${sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()}"
-
-                    // Check if the text "all specs passed" is present in the logs
-                    if (logs.contains("All specs passed")) {
-                        echo "All tests passed!"
-                        deploy = true
-                    } else {
-                        deploy = false
-                    }
-
-                    // sh 'kubectl get all -n filetracker'
-
-                    // // fetch the JSON report from the pod
-                    // def jsonReport = sh(script: "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/mochawesome.json", returnStdout: true).trim()
-
-                   
-
-                    // // Parse the JSON report string into a JSON object
-                    // def reportObj = readJSON text: jsonReport
-
-                    // // Extract the 'stats' object from the JSON report
-                    // def stats = reportObj.stats
-
-                    // // Check if all tests passed
-                    // if (stats.passes == stats.tests) {
-                    //     echo "All tests passed!"
-                    //     deploy = true
-                    // } else {
-                    //     deploy = false
-                    // }
-
-                    // Delete pods and services
-                    
-
-                    // Check deploy status and stop pipeline if deploy is false
-                    // if (deploy==false) {
-                    //     error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
-                    // } 
-                    
-                }
-            }
+        stage('Capture Cypress Logs') {
+    steps {
+        script {
+            // Run Cypress tests and capture logs
+            def logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+            
+            // Print the captured logs
+            echo "${logs}"
+            
+            // You can further process the logs as needed
         }
+    }
+}
+
+
+        
+        
+
+        // stage('Deployment decision & killing test pods') {
+        //     steps {
+        //         script {
+
+
+        //             logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+
+        //             echo "${logs}"
+
+        //             // echo "${sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()}"
+
+        //             // Check if the text "all specs passed" is present in the logs
+        //             if (logs.contains("All specs passed")) {
+        //                 echo "All tests passed!"
+        //                 deploy = true
+        //             } else {
+        //                 deploy = false
+        //             }
+
+        //         }
+        //     }
+        // }
 
         stage('Deploy') {
             steps {
