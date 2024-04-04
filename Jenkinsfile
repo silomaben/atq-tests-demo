@@ -184,13 +184,20 @@ pipeline {
                                 echo "Found UI. Starting Cypress Job"
                                 // remove old report
 
-                                 sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
+                                sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress"
+                                sh "kubectl exec -n filetracker $uiPod -- rm /shared/app"
 
-                                sh 'rm -f /shared/cypress/reports/html/index.html'
-                                sh 'rm -f /shared/cypress/reports/mochawesome.html'
-                                sh 'rm -f /shared/cypress/reports/mochawesome.json'
+                                // sh 'rm -f /shared/cypress/reports/html/index.html'
+                                // sh 'rm -f /shared/cypress/reports/mochawesome.html'
+                                // sh 'rm -f /shared/cypress/reports/mochawesome.json'
 
-                                sh 'kubectl apply -f cypress-tests/kubernetes'
+                                // sh 'kubectl apply -f cypress-tests/kubernetes'
+
+                                sh "kubectl delete -n filetracker deployment express-app"
+                            sh "kubectl delete -n filetracker deployment ui-app"
+                            // sh "kubectl delete -n filetracker job e2e-test-app-job"
+                            sh "kubectl delete -n filetracker service ui-app-service"
+                            sh "kubectl delete -n filetracker service express-app-service"
 
                                 
                             } else {
@@ -206,75 +213,75 @@ pipeline {
         }
 
 
-        stage('Get Cypress-Tests Pod Name') {
-            steps {
-                script {
-                        cypressPod = sh(script: "kubectl get pods -n filetracker -l job-name=e2e-test-app-job -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
-                        echo "Found Cypress pod name: $cypressPod"
+        // stage('Get Cypress-Tests Pod Name') {
+        //     steps {
+        //         script {
+        //                 cypressPod = sh(script: "kubectl get pods -n filetracker -l job-name=e2e-test-app-job -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+        //                 echo "Found Cypress pod name: $cypressPod"
                     
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
 
             
 
-        stage('Wait for tests to run and report generation') {
-            steps {
-                script {
+        // stage('Wait for tests to run and report generation') {
+        //     steps {
+        //         script {
 
-                    waitForReport(uiPod)
+        //             waitForReport(uiPod)
 
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
-                    archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
+        //             sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+        //             archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
 
-        stage('Capture Cypress Logs and decide deployment') {
-            steps {
-                script {
-                    def logs
-                    def finished = false
+        // stage('Capture Cypress Logs and decide deployment') {
+        //     steps {
+        //         script {
+        //             def logs
+        //             def finished = false
                     
-                    // Loop until "Container execution finished" is found in the logs
-                    while (!finished) {
-                        // capture logs
-                        logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+        //             // Loop until "Container execution finished" is found in the logs
+        //             while (!finished) {
+        //                 // capture logs
+        //                 logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
                         
-                        // Print the captured logs
-                        echo "${logs}"
+        //                 // Print the captured logs
+        //                 echo "${logs}"
                         
                         
-                        if (logs.contains("Container execution finished")) {
-                            echo "Found 'Container execution finished' in the logs."
-                            finished = true
-                        } else {
+        //                 if (logs.contains("Container execution finished")) {
+        //                     echo "Found 'Container execution finished' in the logs."
+        //                     finished = true
+        //                 } else {
                             
-                            sleep 10 
-                        }
-                    }
+        //                     sleep 10 
+        //                 }
+        //             }
 
-                    if (logs.contains("All specs passed")) {
-                        echo "All tests passed!"
-                        deploy = true
-                    } else {
-                        deploy = false
-                    }
+        //             if (logs.contains("All specs passed")) {
+        //                 echo "All tests passed!"
+        //                 deploy = true
+        //             } else {
+        //                 deploy = false
+        //             }
 
-                    sh "kubectl delete -n filetracker deployment express-app"
-                    sh "kubectl delete -n filetracker deployment ui-app"
-                    sh "kubectl delete -n filetracker job e2e-test-app-job"
-                    sh "kubectl delete -n filetracker service ui-app-service"
-                    sh "kubectl delete -n filetracker service express-app-service"
+        //             sh "kubectl delete -n filetracker deployment express-app"
+        //             sh "kubectl delete -n filetracker deployment ui-app"
+        //             sh "kubectl delete -n filetracker job e2e-test-app-job"
+        //             sh "kubectl delete -n filetracker service ui-app-service"
+        //             sh "kubectl delete -n filetracker service express-app-service"
 
-                    if (deploy == false){
-                        error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
-                    }
+        //             if (deploy == false){
+        //                 error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
+        //             }
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
 
 
 
@@ -282,16 +289,16 @@ pipeline {
         
 
 
-        stage('Deploy') {
-            steps {
-                script {
+        // stage('Deploy') {
+        //     steps {
+        //         script {
                     
-                    if(deploy==true){
-                        echo "Niiice!!! Deploying ATQ now."
-                    } 
-                }
-            }
-        }
+        //             if(deploy==true){
+        //                 echo "Niiice!!! Deploying ATQ now."
+        //             } 
+        //         }
+        //     }
+        // }
 
         
 
