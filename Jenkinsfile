@@ -224,7 +224,7 @@ pipeline {
     steps {
         script {
             // Run Cypress tests and capture logs
-            def logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
+            def logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true)
             
             // Print the captured logs
             echo "${logs}"
