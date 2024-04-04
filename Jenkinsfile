@@ -186,6 +186,8 @@ pipeline {
 
                                 // sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
                                 sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
+                                 sleep time: 30
+                                sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
                                 
 
                                 // sh 'rm -f /shared/cypress/reports/html/index.html'
