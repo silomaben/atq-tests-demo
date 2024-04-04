@@ -264,11 +264,7 @@ pipeline {
                     // }
 
                     // Delete pods and services
-                    sh "kubectl delete -n filetracker deployment express-app"
-                    sh "kubectl delete -n filetracker deployment ui-app"
-                    sh "kubectl delete -n filetracker job e2e-test-app-job"
-                    sh "kubectl delete -n filetracker service ui-app-service"
-                    sh "kubectl delete -n filetracker service express-app-service"
+                    
 
                     // Check deploy status and stop pipeline if deploy is false
                     if (deploy==false) {
@@ -282,6 +278,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    sh "kubectl delete -n filetracker deployment express-app"
+                    sh "kubectl delete -n filetracker deployment ui-app"
+                    sh "kubectl delete -n filetracker job e2e-test-app-job"
+                    sh "kubectl delete -n filetracker service ui-app-service"
+                    sh "kubectl delete -n filetracker service express-app-service"
                     if(deploy==true){
                         echo "Niiice!!! Deploying ATQ now."
                     } 

@@ -12,7 +12,7 @@ module.exports = defineConfig({
     saveAllAttempts: false
   },
   e2e: {
-    baseUrl: "http://localhost:3000",
+    baseUrl: "http://ui-app-service.filetracker",
     setupNodeEvents(on, config) {
       require('cypress-mochawesome-reporter/plugin')(on);
     },
