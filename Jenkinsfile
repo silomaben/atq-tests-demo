@@ -180,7 +180,7 @@ pipeline {
                             // }
 
                             
-                            sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
+                            // sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
 
                             // run cypress job 
                             sh 'kubectl apply -f cypress-tests/kubernetes'
