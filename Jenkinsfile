@@ -317,6 +317,7 @@ def waitForReport(podName) {
             def counter = 0 
             while (!fileExists(podName,'filetracker','/shared/cypress/reports/html/index.html')) {
                 sh "kubectl get all -n filetracker"
+                sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
                 counter++ 
                 echo "Waiting for index.html file to exist... (Attempt ${counter})"
                 sleep 10 
