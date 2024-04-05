@@ -282,22 +282,11 @@ pipeline {
     }
 
      post {
-        success {
             sh "kubectl delete -n filetracker deployment express-app"
             sh "kubectl delete -n filetracker deployment ui-app"
             sh "kubectl delete -n filetracker job e2e-test-app-job"
             sh "kubectl delete -n filetracker service ui-app-service"
-            sh "kubectl delete -n filetracker service express-app-service"
-           
-            
-        }
-        failure {
-            sh "kubectl delete -n filetracker deployment express-app"
-            sh "kubectl delete -n filetracker deployment ui-app"
-            sh "kubectl delete -n filetracker job e2e-test-app-job"
-            sh "kubectl delete -n filetracker service ui-app-service"
-            sh "kubectl delete -n filetracker service express-app-service"
-        }
+            sh "kubectl delete -n filetracker service express-app-service"     
     }
 }
 
