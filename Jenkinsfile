@@ -23,9 +23,6 @@ pipeline {
             steps {
                 script {
 
-                    sh "pwd"
-                    // sh "rm -r /shared/app/"
-                    
                     // Initialize variables to track pod and pipeline status
                     def firstRunCompleted = false
                     def breakLoop = false
@@ -59,7 +56,6 @@ pipeline {
                                 echo "Deleting pods..."
                                 if (expressAppExists) {
                                     sh "kubectl delete -n filetracker deployment express-app"
-                                    
                                 }
                                 if (uiAppExists) {
                                     sh "kubectl delete -n filetracker deployment ui-app"
@@ -78,7 +74,7 @@ pipeline {
                                 podsFound = true
                             } else {
                                 echo "Not all pods have finished terminating. Waiting 15 secs for pods to terminate..."
-                                sleep 15 // Wait for 15 seconds before checking again
+                                sleep 15 
                             }
                         } else {
                             echo "No running or terminating pods. Proceeding to create testing pods..."
@@ -99,9 +95,8 @@ pipeline {
         stage('Start API Pods') {
             steps {
                 script {
-
-                        sh 'kubectl apply -f express-api/kubernetes'
-
+                    echo "Starting API"
+                    sh 'kubectl apply -f express-api/kubernetes'
                 }
             }
         }
@@ -114,29 +109,25 @@ pipeline {
                     def delaySeconds = 15
                     def attempts = 0
 
-                    // sh "kubectl get all -n filetracker"
-
-
                     retry(retries) {
 
                         attempts++
 
-                        echo "Running UI stage...Attempt ${attempts}"
+                        echo "Finding API pod... Attempt ${attempts}"
 
-                        // Execute curl command to check if api endpoint returns successful response
+                        // Execute curl command to check if api endpoint returns successful response ... Health Check
                         def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://express-app-service.filetracker/students', returnStdout: true).trim()
                             
                         // Convert output to integer
                         def statusCode = statusOutput.toInteger()
 
                         if (statusCode == 200) {
+                            echo "Found API pod. Now starting UI pod"
                             sh "kubectl apply -f ui-app/kubernetes"
-                            echo "found api and started ui"
                         } else {
-                            echo "API not yet up. Returned status code - ${statusCode} when probed"
+                            echo "API pod not yet found/up. Returned status code - ${statusCode} when probed"
                             echo "Retrying in ${delaySeconds} seconds..."
                             sleep delaySeconds
-                            echo "API not up. Retry ${attempt}"
                         }
 
                         
@@ -151,7 +142,7 @@ pipeline {
                 script {
                         
                         uiPod = sh(script: 'kubectl get pods -n filetracker -l app=ui-app -o jsonpath="{.items[0].metadata.name}"', returnStdout: true).trim()
-                        echo "Found pod name: $uiPod"
+                        echo "Found UI pod name: $uiPod"
                        
                     
                 }
@@ -170,39 +161,31 @@ pipeline {
 
                         attempts++
 
-                        echo "Waiting for UI to run...Attempt ${attempts}"
-
+                        echo "Finding UI pod...Attempt ${attempts}"
                         
-                            // Execute curl command to check if api endpoint returns successful response
-                            def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://ui-app-service.filetracker/', returnStdout: true).trim()
-                                
-                            // Convert output to integer
-                            def statusCode = statusOutput.toInteger()
+                        // Execute curl command to check if api endpoint returns successful response
+                        def statusOutput = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://ui-app-service.filetracker/', returnStdout: true).trim()
+                            
+                        // Convert output to integer
+                        def statusCode = statusOutput.toInteger()
 
 
-                            if (statusCode == 200) {
-                                echo "Found UI. Starting Cypress Job"
-                                // remove old report
+                        if (statusCode == 200) {
+                            echo "Found UI. Starting Cypress Job"
 
-                                // sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
-                                // sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
-                                sleep time: 15
-                                sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
-                                
+                            // delete old cypress report
+                            echo "Deleting old report in /shared/cypress/reports/html/index.html"
+                            sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
 
-                                // sh 'rm -f /shared/cypress/reports/html/index.html'
-                                // sh 'rm -f /shared/cypress/reports/mochawesome.html'
-                                // sh 'rm -f /shared/cypress/reports/mochawesome.json'
+                            // run cypress job 
+                            sh 'kubectl apply -f cypress-tests/kubernetes'
 
-                                sh 'kubectl apply -f cypress-tests/kubernetes'
-
-                                
-                            } else {
-                                echo "UI not yet up. Returned status code - ${statusCode} when probed"
-                                echo "Retrying in ${delaySeconds} seconds..."
-                                sleep delaySeconds
-                                echo "UI not up. Retry ${attempts}"
-                            }
+                            
+                        } else {
+                            echo "UI pod not yet found/up. Returned status code - ${statusCode} when probed"
+                            echo "Retrying in ${delaySeconds} seconds..."
+                            sleep delaySeconds
+                        }
                         
                     }
                 }
@@ -246,21 +229,18 @@ pipeline {
 
                     
                     
-                    // Loop until "Container execution finished" is found in the logs
+                    // Loop until "Container execution finished" is found in the logs...this is because initially logs were being printed half way
                     while (!finished) {
+
                         // capture logs
                         logs = sh(script: "kubectl logs -n filetracker $cypressPod -c e2e-test-app", returnStdout: true).trim()
                         
-                        // Print the captured logs
-                        echo "${logs}"
-                        
-                        
                         if (logs.contains("Container execution finished")) {
-                            echo "Found 'Container execution finished' in the logs."
+                            // Print the captured logs
+                            echo "${logs}"
                             finished = true
-                        } else {
-                            
-                            sleep 10 
+                        } else {                            
+                            sleep 5 
                         }
                     }
 
@@ -289,16 +269,9 @@ pipeline {
 
 
 
-        
-        
-
-
         stage('Deploy') {
             steps {
-                script {
-                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
-                    sh "kubectl exec -n filetracker $uiPod -- ls -la /shared/cypress"
-                    
+                script {                 
                     if(deploy==true){
                         echo "Niiice!!! Deploying ATQ now."
                     } 
@@ -316,8 +289,6 @@ def waitForReport(podName) {
         script {
             def counter = 0 
             while (!fileExists(podName,'filetracker','/shared/cypress/reports/html/index.html')) {
-                sh "kubectl get all -n filetracker"
-                sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
                 counter++ 
                 echo "Waiting for index.html file to exist... (Attempt ${counter})"
                 sleep 10 
