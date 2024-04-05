@@ -7,7 +7,7 @@ npm run cy:run
 
 echo "** Copying test reports..."
 # Copy files after tests run
-cp -r /app/cypress/reports /home/bsiloma/test/cypress/results
+cp -r /app/cypress/reports/html /shared/cypress/reports
 
 
 ls -la /app

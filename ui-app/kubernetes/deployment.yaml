@@ -24,7 +24,7 @@ spec:
           imagePullPolicy: Always
           volumeMounts:
           - name: cypress-vol
-            mountPath: /home/bsiloma/test
+            mountPath: /shared/cypress/reports
       volumes:
         - name: cypress-vol
           persistentVolumeClaim: 
