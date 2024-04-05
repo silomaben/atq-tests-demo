@@ -176,7 +176,7 @@ pipeline {
                             // delete old cypress report
                             echo "Deleting old report in /shared/cypress/reports/html/index.html"
                             // sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
-                            sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress"
+                            sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
 
                             // run cypress job 
                             sh 'kubectl apply -f cypress-tests/kubernetes'
