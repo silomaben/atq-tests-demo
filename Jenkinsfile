@@ -185,7 +185,7 @@ pipeline {
                                 // remove old report
 
                                 // sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
-                                sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
+                                // sh "kubectl exec -n filetracker $uiPod -- rm -r /shared/cypress"
                                 sleep time: 15
                                 sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
                                 
