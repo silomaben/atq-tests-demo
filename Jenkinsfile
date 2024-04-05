@@ -213,6 +213,8 @@ pipeline {
             steps {
                 script {
 
+                    echo "Awaiting report generation"
+
                     waitForReport(uiPod)
 
                     sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"

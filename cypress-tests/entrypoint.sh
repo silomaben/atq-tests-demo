@@ -10,9 +10,6 @@ echo "** Copying test reports..."
 cp -r /app/cypress/reports/html /shared/cypress/reports
 
 
-ls -la /app
-ls -la /app/cypress
-ls -la /app/cypress/reports
 
 echo "** Copying complete."
 
