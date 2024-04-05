@@ -172,7 +172,7 @@ pipeline {
                         if (statusCode == 200) {
                             echo "Found UI. Starting Cypress Job"
 
-                            delete old cypress report if it exists
+                            // delete old cypress report if it exists
                             while (!fileExists(uiPod,'filetracker','/shared/cypress/reports/html/index.html')) {
                                 echo "Found old report. Deleting it now..."
                                 sh "kubectl exec -n filetracker $uiPod -- rm /shared/cypress/reports/html/index.html"
