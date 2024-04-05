@@ -229,8 +229,6 @@ pipeline {
                     def logs
                     def finished = false
 
-                    sleep 30 
-
                     
                     
                     // Loop until "Container execution finished" is found in the logs...this is because initially logs were being printed half way
@@ -257,11 +255,7 @@ pipeline {
                         deploy = false
                     }
 
-                    sh "kubectl delete -n filetracker deployment express-app"
-                    sh "kubectl delete -n filetracker deployment ui-app"
-                    sh "kubectl delete -n filetracker job e2e-test-app-job"
-                    sh "kubectl delete -n filetracker service ui-app-service"
-                    sh "kubectl delete -n filetracker service express-app-service"
+                    
 
                     if (deploy == false){
                         error "Some tests failed. Investigate and take necessary actions... Stopping pipeline."
@@ -285,6 +279,25 @@ pipeline {
 
         
 
+    }
+
+     post {
+        success {
+            sh "kubectl delete -n filetracker deployment express-app"
+            sh "kubectl delete -n filetracker deployment ui-app"
+            sh "kubectl delete -n filetracker job e2e-test-app-job"
+            sh "kubectl delete -n filetracker service ui-app-service"
+            sh "kubectl delete -n filetracker service express-app-service"
+           
+            
+        }
+        failure {
+            sh "kubectl delete -n filetracker deployment express-app"
+            sh "kubectl delete -n filetracker deployment ui-app"
+            sh "kubectl delete -n filetracker job e2e-test-app-job"
+            sh "kubectl delete -n filetracker service ui-app-service"
+            sh "kubectl delete -n filetracker service express-app-service"
+        }
     }
 }
 
