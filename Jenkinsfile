@@ -143,7 +143,6 @@ pipeline {
                         
                         uiPod = sh(script: 'kubectl get pods -n filetracker -l app=ui-app -o jsonpath="{.items[0].metadata.name}"', returnStdout: true).trim()
                         echo "Found UI pod name: $uiPod"
-                       
                     
                 }
             }
@@ -216,7 +215,7 @@ pipeline {
 
                     waitForReport(uiPod)
 
-                    sh "kubectl exec -n filetracker $uiPod -- cat /shared/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
+                    sh "kubectl exec -n filetracker $uiPod -- cat /home/bsiloma/test/cypress/reports/html/index.html > report_build_${env.BUILD_NUMBER}.html"
                     archiveArtifacts artifacts: "report_build_${env.BUILD_NUMBER}.html", onlyIfSuccessful: true
 
                 }
@@ -293,9 +292,9 @@ def waitForReport(podName) {
     timeout(time: 5, unit: 'MINUTES') {
         script {
             def counter = 0 
-            while (!fileExists(podName,'filetracker','/shared/cypress/reports/html/index.html')) {
+            while (!fileExists(podName,'filetracker','/home/bsiloma/test/cypress/reports/html/index.html')) {
                 sh "kubectl get -n filetracker job e2e-test-app-job"
-                sh "kubectl exec -n filetracker $uiPod -- ls -la /shared"
+                sh "kubectl exec -n filetracker $uiPod -- ls -la /home/bsiloma/test"
                 counter++ 
                 echo "Waiting for index.html file to exist... (Attempt ${counter})"
                 sleep 10 
