@@ -92,7 +92,7 @@ pipeline {
             }
         }
 
-        stage('Start API Pods') {
+        stage('Start API Pod') {
             steps {
                 script {
                     echo "Starting API"
@@ -102,7 +102,7 @@ pipeline {
         }
 
         
-        stage('Run UI') {
+        stage('Start UI Pod') {
             steps {
                 script {
                     def retries = 24
@@ -137,7 +137,7 @@ pipeline {
             }
         }
 
-         stage('Get Ui Pod Name') {
+         stage('Get UI Pod Name') {
             steps {
                 script {
                         
@@ -148,7 +148,7 @@ pipeline {
             }
         }
 
-        stage('Run cypress test') {
+        stage('Run Cypress E2E Job') {
             steps {
                 script {
                     def retries = 24
@@ -197,7 +197,7 @@ pipeline {
         }
 
 
-        stage('Get Cypress-Tests Pod Name') {
+        stage('Get Cypress Job Pod Name') {
             steps {
                 script {
                         cypressPod = sh(script: "kubectl get pods -n filetracker -l job-name=e2e-test-app-job -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
@@ -209,7 +209,7 @@ pipeline {
 
             
 
-        stage('Wait for tests to run and report generation') {
+        stage('Wait for tests to run and generate report') {
             steps {
                 script {
 
@@ -224,7 +224,7 @@ pipeline {
             }
         }
 
-        stage('Capture Cypress Logs and decide deployment') {
+        stage('Decide deployment based on test outcomes') {
             steps {
                 script {
 
@@ -273,7 +273,7 @@ pipeline {
             steps {
                 script {                 
                     if(deploy==true){
-                        echo "Niiice!!! Deploying ATQ now."
+                        echo "Niiice!!! Deploying CerebriAI ATQ now."
                     } 
                 }
             }
